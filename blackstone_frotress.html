@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<!--<div>
+  roll:
+  <label>
+    <input type="radio" name="dice_roll_type" value="manual" checked>
+    manual
+  </label>
+  <label>
+    <input type="radio" name="dice_roll_type" value="virtual">
+    virtual
+  </label>
+</div>-->
+
+<div>
+  add an explorer<br>
+  <label>
+    name
+    <input type="text" name="explorer_name">
+  </label>
+  <button id="add_explorer">add</button>
+</div>
+
+<div id="explorers"></div>
+<div id="explorer_template" style="display:none;">
+  <div id="explorer_i">
+    <div>_name</div>
+    <div>
+      activations
+      <table>
+        <tr>
+          <td><input type="text" name="activation_1_i"></td>
+          <td><input type="text" name="activation_2_i"></td>
+          <td><input type="text" name="activation_3_i"></td>
+          <td><input type="text" name="activation_4_i"></td>
+        </tr>
+      </table>
+    </div>
+    <label>
+      inspiration
+      <input type="text" name="inspiration_i">
+    </label>
+  </div>
+</div>
+
+<div>
+  <label>
+    number of hostile groups
+    <input type="number" name="groups_number">
+  </label>
+</div>
+<button id="gen_initiative">generate initiative queue</button>
+<div id="initiative"></div>
+<div id="initiative_template" style="display:none;">
+  <div id="initiative_name" draggable="true" ondragstart="dragInitiative(event)" ondrop="dropInitiative(event)" ondragover="allowDrop(event)">
+    <div>_name</div>
+    <label>
+      <input type="checkbox">
+      done
+    </label>
+  </div>
+</div>
+
+
+<script>
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; --i) {
+      const j = Math.floor(Math.random() * i);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+  }
+
+  function allowDrop(e) {
+    e.preventDefault();
+  }
+
+  function dragInitiative(e) {
+    e.dataTransfer.setData("node_id", e.target.id);
+  }
+
+  function dropInitiative(e) {
+    e.preventDefault();
+    let id = e.dataTransfer.getData("node_id");
+    let sibling = e.target;
+    while (! sibling.id.startsWith("initiative")) {
+      sibling = sibling.parentNode;
+    }
+    let nodeToMove = document.getElementById(id);
+    if (nodeToMove.offsetTop < sibling.offsetTop)
+      sibling.after(nodeToMove);
+    else
+      sibling.before(nodeToMove);
+  }
+
+  let explorers = [];
+
+  document.querySelector("#add_explorer").onclick = () => {
+    if (explorers.length < 4) {
+      let i = explorers.length;
+      if (i === 3)
+        document.querySelector("#add_explorer").disabled = true;
+      let name = document.querySelector("[name=explorer_name]").value;
+      document.querySelector("[name=explorer_name]").value = "";
+      explorers[i] = name;
+      document.querySelector("#explorers").innerHTML += document.querySelector("#explorer_template")
+          .innerHTML.replace(/_i/g, "_" + i).replace(/_name/g, name);
+    }
+  };
+
+  document.querySelector("#gen_initiative").onclick = () => {
+    let groups = document.querySelector("[name=groups_number]").value;
+    let a = explorers.slice();
+    for (let i = 1; i <= groups; ++i)
+      a.push("group " + i);
+    shuffle(a);
+    document.querySelector("#initiative").innerHTML = "";
+    for (let x of a)
+      document.querySelector("#initiative").innerHTML += document.querySelector("#initiative_template")
+          .innerHTML.replace(/_name/g, x);
+  };
+
+  //let diceRollType = () => document.querySelector("[name=dice_roll_type]:checked").value;
+</script>
+</body>
+</html>
